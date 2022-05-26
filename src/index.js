@@ -1,12 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
-
-ReactDOM.render(<App />, document.getElementById('root'));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+import React from "./react"
+import ReactDOM from "./react-dom"
+// function FunctionComponent(props) {
+//   let element = (
+//     <h1 className="title" style={{ color: "red", backgroundColor: "green" }}>
+//       {props.message}
+//       <span>world</span>
+//     </h1>
+//   )
+//   return element
+// }
+// let element = <FunctionComponent message={"消息"} age={12} />
+class ClassComponent extends React.Component{
+	render() {
+		let element = (
+			<h1 className="title" style={{color: "red", backgroundColor: "green"}}>
+				{this.props.message}
+				<span>world</span>
+			</h1>
+		)
+		return element
+	}
+}
+let element = <ClassComponent message={"消息"} age={12}/>
+ReactDOM.render(element, document.getElementById("root"))
