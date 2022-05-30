@@ -46,8 +46,11 @@ class Updater {
 		const { classInstance, pendingStates } = this
 		// 获取老的状态
 		let { state } = classInstance
-		pendingStates.forEach(newState => {
-			state = {...state, ...newState}
+		pendingStates.forEach(nextState => {
+			if (typeof nextState === 'function') {
+				nextState = nextState(state)
+			}
+			state = {...state, ...nextState}
 		})
 		pendingStates.length = 0
 		return state

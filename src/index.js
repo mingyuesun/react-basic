@@ -7,7 +7,16 @@ class Counter extends React.Component {
     this.state = { number: 0 }
   }
   handleClick = (event) => {
-    this.setState({number: this.state.number + 1})
+    this.setState(state => ({number: state.number + 1}))
+		console.log(this.state.number)
+		this.setState(state => ({number: state.number + 1}))
+		console.log(this.state.number)
+		// setTimeout(() => {
+		// 	this.setState({number: this.state.number + 1})
+		// 	console.log(this.state.number)
+		// 	this.setState({number: this.state.number + 1})
+		// 	console.log(this.state.number)
+		// })
   }
   render() {
     return (
