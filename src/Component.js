@@ -15,9 +15,13 @@ class Updater {
 	constructor(classInstance) {
 		this.classInstance = classInstance
 		this.pendingStates = []
+		this.callbacks = []
 	}
-	addState(partialState) {
+	addState(partialState, callback ) {
 		this.pendingStates.push(partialState)
+		if (callback) {
+			this.callbacks.push(callback)
+		}
 		this.emitUpdate()
 	}
 	emitUpdate() {
@@ -34,13 +38,18 @@ class Updater {
 	 * 3. 把新的虚拟 DOM 同步到页面的真实 DOM 上
 	 */
 	updateComponent() {
-		const { classInstance, pendingStates } = this
+		const { classInstance, pendingStates, callbacks } = this
 		// 如果长度 >0 说明有等待生效的更新
 		if (pendingStates.length > 0) {
 			// 1. 计算新的组件状态
 			let newState = this.getState()
 			shouldUpdate(classInstance, newState)
 		}
+		// or process.nextTick
+		queueMicrotask(() => {
+			callbacks.forEach(callback => callback.call(this))
+			callbacks.length = 0
+		})
 	}
 	getState() {
 		const { classInstance, pendingStates } = this
@@ -66,8 +75,8 @@ export class Component {
 		this.props = props
 		this.updater = new Updater(this)
 	}
-	setState(partialState) {
-		this.updater.addState(partialState)
+	setState(partialState, callback) {
+		this.updater.addState(partialState, callback)
 	}
 	forceUpdate(){ // 只有类组件才有
 		let oldRenderVdom = this.oldRenderVdom

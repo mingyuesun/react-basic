@@ -3,9 +3,15 @@ import { toVdom } from './utils'
 import { Component } from './Component'
 console.log('self react')
 function createElement(type, config, children){
+	let ref
+	let key
 	if (config) {
+		ref = config.ref
+		key = config.key
 		delete config.__self
 		delete config.__source
+		delete config.ref
+		delete config.key
 	}
 	let props = {...config}
 	if (arguments.length > 3) {
@@ -16,13 +22,20 @@ function createElement(type, config, children){
 	return {
 		$$typeof: REACT_ELEMENT,
 		type,
-		props
+		props,
+		ref,
+		key
 	}
+}
+
+function createRef() {
+	return {current: null}
 }
 
 const React = {
 	createElement,
-	Component
+	Component,
+	createRef
 }
 
 export default React

@@ -12,7 +12,7 @@ function render(vdom, container) {
 }
 
 function createDOM(vdom) {
-	let { type, props } = vdom
+	let { type, props, ref } = vdom
 	// 根据不同的虚拟 DOM 类型创建真实 DOM
 	let dom
 	if (type === REACT_TEXT){
@@ -39,12 +39,14 @@ function createDOM(vdom) {
 	}
 	// 当根据虚拟 DOM 创建好真实 DOM 之后，让 vdom.dom = dom
 	vdom.dom = dom
+	if (ref) ref.current = dom
 	return dom
 }
 
 function mountClassComponent(vdom)  {
-	let {type: ClassComponent, props} = vdom
+	let {type: ClassComponent, props, ref} = vdom
 	let classInstance = new ClassComponent(props)
+	if (ref) ref.current = classInstance
 	let renderVdom = classInstance.render()
 	// 把类组件渲染的虚拟 DOM 放到类的实例上
 	classInstance.oldRenderVdom =  vdom.oldRenderVdom = renderVdom
