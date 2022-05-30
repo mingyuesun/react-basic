@@ -1,5 +1,16 @@
 import { REACT_COMPONENT } from './constants'
 import { findDOM, compareTwoVdom } from './react-dom'
+export const updateQueue = {
+	isBatchindgUpdate: false, // 是否出于批量更新模式
+	updaters: new Set(),  // 当前更新队列中保存的所有 updater 实例，每个 updater 实例对应一个组件
+	batchUpdate() {  // 批量更新的方法
+		updateQueue.isBatchingUpdate = false
+		for (const updater of updateQueue.updaters) {
+			updater.updateComponent()
+		}
+		updateQueue.updaters.clear()
+	}
+}
 class Updater {
 	constructor(classInstance) {
 		this.classInstance = classInstance
@@ -10,7 +21,12 @@ class Updater {
 		this.emitUpdate()
 	}
 	emitUpdate() {
-		this.updateComponent()
+		if (updateQueue.isBatchingUpdate) {
+			// 如果当前处于批量更新模式，只添加 updater 实例到队列中，并不会进行实际的更新
+			updateQueue.updaters.add(this)
+		} else {
+			this.updateComponent()
+		}
 	}
 	/**
 	 * 1. 计算新的组件状态
@@ -50,7 +66,7 @@ export class Component {
 	setState(partialState) {
 		this.updater.addState(partialState)
 	}
-	forceUpdate(){
+	forceUpdate(){ // 只有类组件才有
 		let oldRenderVdom = this.oldRenderVdom
 		let oldDOM = findDOM(oldRenderVdom)
 		let newRenderVdom = this.render()

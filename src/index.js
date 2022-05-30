@@ -1,5 +1,6 @@
 import React from "./react"
 import ReactDOM from "./react-dom"
+import { updateQueue } from "./Component"
 
 class Counter extends React.Component {
 	constructor(props) {
@@ -7,7 +8,11 @@ class Counter extends React.Component {
 		this.state = { number: 0 }
 	}
   handleClick = () => {
-		this.setState({ number: this.state.number+1 })
+		updateQueue.isBatchingUpdate = true
+		this.setState({ number: 2 })
+		this.setState({ number: 2 })
+		this.setState({ number: 3 })
+		updateQueue.batchUpdate()
 	}
 	render() {
 		return (
