@@ -1,4 +1,5 @@
 import { REACT_TEXT, REACT_COMPONENT } from './constants'
+import { addEvent } from './event'
 /**
  * 把虚拟 DOM 变成真实 DOM
  * 并插入到父结点中
@@ -17,7 +18,6 @@ function createDOM(vdom) {
 	if (type === REACT_TEXT){
 		dom = document.createTextNode(props)
 	} else if (typeof type === 'function') {
-		console.log(type.isReactComponent)
 		if (type.isReactComponent === REACT_COMPONENT) {
 			return mountClassComponent(vdom)
 		} else {
@@ -76,7 +76,8 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
 				dom.style[attr] = styleObj[attr]
 			}
 		} else if (/^on[A-Z].*/.test(key)) {
-			 	dom[key.toLowerCase()] = newProps[key]
+			  // dom[key.toLowerCase()] = newProps[key]
+				addEvent(dom, key.toLowerCase(), newProps[key])
 		} else {  // className id
 			dom[key] = newProps[key]
 		}
