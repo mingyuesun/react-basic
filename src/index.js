@@ -1,52 +1,104 @@
-import React from "./react"
-import ReactDOM from "./react-dom"
-let lastCounter
+import React from "react"
+import ReactDOM from "react-dom"
 class Counter extends React.Component {
-	render(){
-		return <div>Counter</div>
-	}
-}
-
-function Func(props, forwardRef) {
-	return <div ref={forwardRef}>Func</div>
-}
-
-const ForwardFunc = React.forwardRef(Func)
-console.log(ForwardFunc)
-class Sum extends React.Component {
 	constructor(props) {
 		super(props)
-		this.a = React.createRef()
-		this.b = React.createRef()
-		this.result = React.createRef()	
-		this.counter = React.createRef()
-		this.func = React.createRef()	
-		this.state = {number: 1}
+		this.state = {number: 0}
+		console.log('Counter 1.constructor')
+	}
+	UNSAFE_componentWillMount() {
+		console.log('Counter 2.componentWillMount')
+	}
+	componentDidMount() {
+		console.log('Counter 4.componentDidMount')
+	}
+	shouldComponentUpdate(nextProps, nextState) {
+		console.log('Counter 5.shouldComponentUpdate')
+		return nextState.number % 2 === 0
+	}
+	UNSAFE_componentWillUpdate() {
+		console.log('Counter 6.componentWillUpdate')
+	}
+	componentDidUpdate(newProps, newState) {
+		console.log('Counter 7.componentDidUpdate')
 	}
 	handleClick = () => {
-		let valueA = this.a.current.value
-		let valueB = this.b.current.value
-		this.result.current.value = valueA + valueB
-		// console.log(this.counter.current)
-	}
-	onClick = () => {
-		console.log(this.func.current)
-		lastCounter = this.counter.current
-		this.setState(state => ({number: state.number + 1}), () => {
-			console.log(this.counter.current === lastCounter)
-		})
+		this.setState({number: this.state.number + 1})
 	}
 	render() {
+		console.log('Counter 3.render')
 		return (
 			<div>
-			{/* <Func ref={this.func}/> */}
-			<ForwardFunc ref={this.func}/>
-			<Counter ref={this.counter}/>
-			<button onClick={this.onClick}>{this.state.number}</button>
-			<input ref={this.a}/>+<input ref={this.b}/><button onClick={this.handleClick}>=</button><input ref={this.result}/>
-		</div>
+				<p>{this.state.number}</p>
+				{this.state.number === 4 ? null : <ChildCount count={this.state.number}/>}
+				<button onClick={this.handleClick}>+</button>
+			</div>
 		)
 	}
 }
+class ChildCount extends React.Component {
+	UNSAFE_componentWillMount() {
+		console.log('ChildCount 1.componentWillMount')
+	}
+	componentDidMount() {
+		console.log('ChildCount 3.componentDidMount')
+	}
+	UNSAFE_componentWillReceiveProps(newProps) {
+		console.log('ChildCount 4.componentWillReceiveProps')
+	}
+	shouldComponentUpdate(nextProps, nextState) {
+		console.log('ChildCount 5.shouldComponentUpdate')
+		return nextProps.count % 3 === 0
+	}
+	componentWillUnmount() {
+		console.log('ChildCount 6.componentWillUnmount')
+	}
+	render() {
+		console.log('ChildCount 2.render')
+		return (
+			<p>{this.props.count}</p>
+		)
+	}
+}
+ReactDOM.render(<Counter />, document.getElementById("root"))
 
-ReactDOM.render(<Sum title={"计时器"} />, document.getElementById("root"))
+/**
+  组件的生命周期
+  Counter 1.constructor
+  Counter 2.componentWillMount
+  Counter 3.render
+  Counter 4.componentDidMount
+  Counter 5.shouldComponentUpdate
+  Counter 6.componentWillUpdate
+  Counter 3.render
+  Counter 7.componentDidUpdate
+ */
+
+ /**
+	 父子组件混合生命周期
+	 Counter 1.constructor
+   Counter 2.componentWillMount
+   Counter 3.render
+   ChildCount 1.componentWillMount
+   ChildCount 2.render
+   ChildCount 3.componentDidMount
+   Counter 4.componentDidMount
+   Counter 5.shouldComponentUpdate
+   Counter 6.componentWillUpdate
+   Counter 3.render
+   ChildCount 4.componentWillReceiveProps
+   ChildCount 5.shouldComponentUpdate
+   Counter 7.componentDidUpdate
+   Counter 5.shouldComponentUpdate
+   Counter 6.componentWillUpdate
+   Counter 3.render
+   ChildCount 6.componentWillUnmount
+   Counter 7.componentDidUpdate
+   Counter 5.shouldComponentUpdate
+   Counter 6.componentWillUpdate
+   Counter 3.render
+   ChildCount 1.componentWillMount
+   ChildCount 2.render
+   ChildCount 3.componentDidMount
+   Counter 7.componentDidUpdate
+  */

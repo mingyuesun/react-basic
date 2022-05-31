@@ -9,6 +9,9 @@ import { addEvent } from './event'
 function render(vdom, container) {
 	let newDOM = createDOM(vdom)
 	container.appendChild(newDOM)
+	if (newDOM.componentDidMount) {
+		newDOM.componentDidMount()
+	}
 }
 
 function createDOM(vdom) {
@@ -54,12 +57,21 @@ function  mountForwardComponent(vdom) {
 
 function mountClassComponent(vdom)  {
 	let {type: ClassComponent, props, ref} = vdom
+	// 创建组件的实例
 	let classInstance = new ClassComponent(props)
+	// 组件将要挂载
+	if (classInstance.UNSAFE_componentWillMount) {
+		classInstance.UNSAFE_componentWillMount()
+	}
 	if (ref) ref.current = classInstance
 	let renderVdom = classInstance.render()
 	// 把类组件渲染的虚拟 DOM 放到类的实例上
 	classInstance.oldRenderVdom =  vdom.oldRenderVdom = renderVdom
-	return createDOM(renderVdom)
+	let dom = createDOM(renderVdom)
+	if (classInstance.componentDidMount) {
+		dom.componentDidMount = classInstance.componentDidMount.bind(classInstance)
+	}
+	return dom
 }
 
 function mountFunctionComponent(vdom) {

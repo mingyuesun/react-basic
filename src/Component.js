@@ -66,8 +66,20 @@ class Updater {
 	}
 }
 function shouldUpdate(classInstance, newState) {
+	let willUpdate = true
+	// 有 shouldComponentUpdate 方法，且执行结果为 false，才不更新
+	// 暂时没有处理 props 的更新
+	if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(classInstance.props, newState)) {
+		willUpdate = false
+	}
+	if (willUpdate && classInstance.UNSAFE_componentWillUpdste) {
+		classInstance.UNSAFE_componentWillUpdste()
+	}
+	// 无论实例数据要不要更新，实例 state 数据都会改变，都会指向新的状态
 	classInstance.state = newState
-	classInstance.forceUpdate()
+	if (willUpdate) {
+		classInstance.forceUpdate()
+	}
 }
 export class Component { 
 	static isReactComponent = REACT_COMPONENT
@@ -84,5 +96,8 @@ export class Component {
 		let newRenderVdom = this.render()
 		compareTwoVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
 		this.oldRenderVdom = newRenderVdom
+		if (this.componentDidUpdate) {
+			this.componentDidUpdate(this.props, this.state)
+		}
 	}
 }
