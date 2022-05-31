@@ -1,4 +1,4 @@
-import { REACT_TEXT, REACT_COMPONENT } from './constants'
+import { REACT_TEXT, REACT_COMPONENT, REACT_FORWARD_REF } from './constants'
 import { addEvent } from './event'
 /**
  * 把虚拟 DOM 变成真实 DOM
@@ -15,7 +15,9 @@ function createDOM(vdom) {
 	let { type, props, ref } = vdom
 	// 根据不同的虚拟 DOM 类型创建真实 DOM
 	let dom
-	if (type === REACT_TEXT){
+	if (type && type.$$typeof === REACT_FORWARD_REF) {
+		return mountForwardComponent(vdom)
+	}else if (type === REACT_TEXT){
 		dom = document.createTextNode(props)
 	} else if (typeof type === 'function') {
 		if (type.isReactComponent === REACT_COMPONENT) {
@@ -41,6 +43,13 @@ function createDOM(vdom) {
 	vdom.dom = dom
 	if (ref) ref.current = dom
 	return dom
+}
+
+function  mountForwardComponent(vdom) {
+	let { type, props, ref } = vdom
+	let renderVdom = type.render(props, ref)
+	vdom.oldRenderVdom = renderVdom
+	return createDOM(renderVdom)
 }
 
 function mountClassComponent(vdom)  {
