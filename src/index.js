@@ -1,5 +1,5 @@
-import React from "react"
-import ReactDOM from "react-dom"
+import React from "./react"
+import ReactDOM from "./react-dom"
 class Counter extends React.Component {
 	constructor(props) {
 		super(props)
@@ -68,7 +68,7 @@ ReactDOM.render(<Counter />, document.getElementById("root"))
   Counter 2.componentWillMount
   Counter 3.render
   Counter 4.componentDidMount
-  Counter 5.shouldComponentUpdate
+  2Counter 5.shouldComponentUpdate
   Counter 6.componentWillUpdate
   Counter 3.render
   Counter 7.componentDidUpdate
@@ -83,18 +83,18 @@ ReactDOM.render(<Counter />, document.getElementById("root"))
    ChildCount 2.render
    ChildCount 3.componentDidMount
    Counter 4.componentDidMount
-   Counter 5.shouldComponentUpdate
+   2Counter 5.shouldComponentUpdate
    Counter 6.componentWillUpdate
    Counter 3.render
    ChildCount 4.componentWillReceiveProps
    ChildCount 5.shouldComponentUpdate
    Counter 7.componentDidUpdate
-   Counter 5.shouldComponentUpdate
+   2Counter 5.shouldComponentUpdate
    Counter 6.componentWillUpdate
    Counter 3.render
    ChildCount 6.componentWillUnmount
    Counter 7.componentDidUpdate
-   Counter 5.shouldComponentUpdate
+   2Counter 5.shouldComponentUpdate
    Counter 6.componentWillUpdate
    Counter 3.render
    ChildCount 1.componentWillMount

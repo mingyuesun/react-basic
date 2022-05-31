@@ -24,7 +24,8 @@ class Updater {
 		}
 		this.emitUpdate()
 	}
-	emitUpdate() {
+	emitUpdate(nextProps) {
+		this.nextProps = nextProps
 		if (updateQueue.isBatchingUpdate) {
 			// 如果当前处于批量更新模式，只添加 updater 实例到队列中，并不会进行实际的更新
 			updateQueue.updaters.add(this)
@@ -38,12 +39,12 @@ class Updater {
 	 * 3. 把新的虚拟 DOM 同步到页面的真实 DOM 上
 	 */
 	updateComponent() {
-		const { classInstance, pendingStates, callbacks } = this
+		const { classInstance, pendingStates, callbacks, nextProps } = this
 		// 如果长度 >0 说明有等待生效的更新
-		if (pendingStates.length > 0) {
+		if (nextProps || pendingStates.length > 0) {
 			// 1. 计算新的组件状态
-			let newState = this.getState()
-			shouldUpdate(classInstance, newState)
+			let nextState = this.getState()
+			shouldUpdate(classInstance, nextProps, nextState)
 		}
 		// or process.nextTick
 		queueMicrotask(() => {
@@ -65,18 +66,21 @@ class Updater {
 		return state
 	}
 }
-function shouldUpdate(classInstance, newState) {
+function shouldUpdate(classInstance, nextProps, nextState) {
 	let willUpdate = true
 	// 有 shouldComponentUpdate 方法，且执行结果为 false，才不更新
-	// 暂时没有处理 props 的更新
-	if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(classInstance.props, newState)) {
+	// 暂时没有处理 props 的更新 => 已处理 nextProps
+	if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(nextProps, nextState)) {
 		willUpdate = false
 	}
 	if (willUpdate && classInstance.UNSAFE_componentWillUpdste) {
 		classInstance.UNSAFE_componentWillUpdste()
 	}
+	if (nextProps) {
+		classInstance.props = nextProps
+	}
 	// 无论实例数据要不要更新，实例 state 数据都会改变，都会指向新的状态
-	classInstance.state = newState
+	classInstance.state = nextState
 	if (willUpdate) {
 		classInstance.forceUpdate()
 	}
