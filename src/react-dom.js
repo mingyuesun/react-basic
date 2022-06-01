@@ -186,7 +186,8 @@ function updateChildren(parentDOM, oldVChildren, newVChildren) {
   newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren]
   const maxLength = Math.max(oldVChildren.length, newVChildren.length)
   for (let i = 0; i < maxLength; i++) {
-    compareTwoVdom(parentDOM, oldVChildren[i], newVChildren[i])
+    let nextVdom = oldVChildren.find((item, index) => index > i && item && findDOM(item))
+    compareTwoVdom(parentDOM, oldVChildren[i], newVChildren[i], findDOM(nextVdom))
   }
 }
 
@@ -204,7 +205,7 @@ export function findDOM(vdom) {
   }
 }
 
-export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
+export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
   // 新旧都没有
   if (!oldVdom && !newVdom) {
     return
@@ -213,14 +214,22 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
     unMountVdom(oldVdom)
   } else if (!oldVdom && newVdom) {
     let newDOM = createDOM(newVdom)
-    parentDOM.appendChild(newDOM) // BUG
+    if (nextDOM) {
+      parentDOM.insertBefore(newDOM, nextDOM)
+    } else {
+      parentDOM.appendChild(newDOM) // BUG
+    }
     if (newDOM.compoentDidMount) {
       newDOM.compoentDidMount()
     }
   } else if (oldVdom && newVdom && oldVdom.type !== newVdom.type) {
     unMountVdom(oldVdom)
     let newDOM = createDOM(newVdom)
-    parentDOM.appendChild(newDOM) // BUG
+    if (nextDOM) {
+      parentDOM.insertBefore(newDOM, nextDOM)
+    } else {
+      parentDOM.appendChild(newDOM) // BUG
+    }
     if (newDOM.compoentDidMount) {
       newDOM.compoentDidMount()
     }
