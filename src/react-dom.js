@@ -22,7 +22,7 @@ function createDOM(vdom) {
     return mountForwardComponent(vdom)
   } else if (type === REACT_TEXT) {
     dom = document.createTextNode(props)
-  } else if (type.$$typeof === REACT_FRAGMENT) {
+  } else if (type === REACT_FRAGMENT) {
     dom = document.createDocumentFragment(props)
   } else if (typeof type === "function") {
     if (type.isReactComponent === REACT_COMPONENT) {

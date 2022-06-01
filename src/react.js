@@ -38,19 +38,13 @@ function forwardRef(render) {
 		render
 	}
 }
-
-function Fragment() {
-	return {
-		$$typeof: REACT_FRAGMENT
-	}
-}
  
 const React = {
 	createElement,
 	Component,
 	createRef,
 	forwardRef,
-	Fragment
+	Fragment: REACT_FRAGMENT
 }
 
 export default React

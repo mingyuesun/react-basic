@@ -12,12 +12,12 @@ class Counter extends React.Component {
 	}
 	render() {
 		return (
-			<div>
+			<React.Fragment>
 				<ul>
 					{this.state.list.map(item => <li key={item}>{item}</li>)}
 				</ul>
 				<button onClick={this.handleClick}>+</button>
-			</div>
+			</React.Fragment>
 		)
 	}
 }
