@@ -1,4 +1,4 @@
-import { REACT_ELEMENT, REACT_FORWARD_REF } from './constants'
+import { REACT_ELEMENT, REACT_FORWARD_REF, REACT_FRAGMENT } from './constants'
 import { toVdom } from './utils'
 import { Component } from './Component'
 console.log('self react')
@@ -38,12 +38,19 @@ function forwardRef(render) {
 		render
 	}
 }
+
+function Fragment() {
+	return {
+		$$typeof: REACT_FRAGMENT
+	}
+}
  
 const React = {
 	createElement,
 	Component,
 	createRef,
-	forwardRef
+	forwardRef,
+	Fragment
 }
 
 export default React
