@@ -1,4 +1,4 @@
-import { REACT_TEXT, REACT_COMPONENT, REACT_FORWARD_REF, REACT_FRAGMENT, MOVE, PLACEMENT } from "./constants"
+import { REACT_TEXT, REACT_COMPONENT, REACT_FORWARD_REF, REACT_FRAGMENT, MOVE, PLACEMENT, REACT_PROVIDER, REACT_CONTEXT } from "./constants"
 import { addEvent } from "./event"
 /**
  * 把虚拟 DOM 变成真实 DOM
@@ -18,7 +18,11 @@ function createDOM(vdom) {
   let { type, props, ref } = vdom
   // 根据不同的虚拟 DOM 类型创建真实 DOM
   let dom
-  if (type && type.$$typeof === REACT_FORWARD_REF) {
+  if (type && type.$$typeof === REACT_PROVIDER) { 
+    return mountProviderComponent(vdom)
+  } else if (type && type.$$typeof === REACT_CONTEXT) {
+    return mountContextComponent(vdom)
+  } else if (type && type.$$typeof === REACT_FORWARD_REF) {
     return mountForwardComponent(vdom)
   } else if (type === REACT_TEXT) {
     dom = document.createTextNode(props)
@@ -49,6 +53,28 @@ function createDOM(vdom) {
   return dom
 }
 
+/**
+ * 1.把属性中的值存放到 Provider._currentValue 上
+ * 2.渲染它的子节点
+ * @param {*} vdom
+ */
+function mountProviderComponent(vdom) {
+  let { type, props } = vdom
+  let context = type._context  // Provider._context
+  context._currentValue = props.value
+  let renderVdom = props.children
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
+}
+
+function mountContextComponent(vdom) {
+  let { type, props } = vdom
+  let context = type._context
+  let renderVdom = props.children(context._currentValue)
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
+}
+
 function mountForwardComponent(vdom) {
   let { type, props, ref } = vdom
   let renderVdom = type.render(props, ref)
@@ -60,6 +86,9 @@ function mountClassComponent(vdom) {
   let { type: ClassComponent, props, ref } = vdom
   // 创建组件的实例
   let classInstance = new ClassComponent(props)
+  if (ClassComponent.contextType) {
+    classInstance.context = ClassComponent.contextType._currentValue
+  }
   vdom.classInstance = classInstance
   // 组件将要挂载
   if (classInstance.UNSAFE_componentWillMount) {
@@ -144,7 +173,11 @@ function unMountVdom(oldVdom) {
  * @param {*} newVdom
  */
 function updateElement(oldVdom, newVdom) {
-  if (oldVdom.type === REACT_TEXT) {
+  if (oldVdom.type.$$typeof === REACT_PROVIDER) {
+    updateProviderComponent(oldVdom, newVdom)
+  } else if (oldVdom.type.$$typeof === REACT_CONTEXT) {
+    updateContextComponent(oldVdom, newVdom)
+  } else if (oldVdom.type === REACT_TEXT) {
     let currentDOM = newVdom.dom = findDOM(oldVdom)
     if (oldVdom.props !== newVdom.props) {
       currentDOM.textContent = newVdom.props
@@ -163,6 +196,27 @@ function updateElement(oldVdom, newVdom) {
       updateFunctionComponent(oldVdom, newVdom)
     }
   }
+}
+
+function updateProviderComponent(oldVdom, newVdom) {
+  let currentDOM = findDOM(oldVdom)
+  let parentDOM = currentDOM.parentNode
+  let { type, props } = newVdom
+  let context = type._context
+  context._currentValue = props.value
+  let renderVdom = props.children
+  compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+  newVdom.oldRenderVdom = renderVdom
+}
+
+function updateContextComponent(oldVdom, newVdom) {
+  let currentDOM = findDOM(oldVdom)
+  let parentDOM = currentDOM.parentNode
+  let { type, props } = newVdom
+  let context = type._context
+  let renderVdom = props.children(context._currentValue)
+  compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+  newVdom.oldRenderVdom = renderVdom
 }
 
 function updateClassComponent(oldVdom, newVdom) {

@@ -97,6 +97,9 @@ export class Component {
 	forceUpdate(){ // 只有类组件才有
 		let oldRenderVdom = this.oldRenderVdom
 		let oldDOM = findDOM(oldRenderVdom)
+		if (this.constructor.contextType) {
+			this.context = this.constructor.contextType._currentValue
+		}
 		if (this.constructor.getDerivedStateFromProps) {
 			let newState = this.constructor.getDerivedStateFromProps(this.props, this.state)
 			if (newState) {
