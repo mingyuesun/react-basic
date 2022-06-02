@@ -1,23 +1,39 @@
-import React from "./react"
-import ReactDOM from "./react-dom"
+import React from "react"
+import ReactDOM from "react-dom"
 class Counter extends React.Component {
-	constructor(props){
+	constructor(props) {
 		super(props)
-		this.state = {list: ['A', 'B', 'C', 'D', 'E', 'F']}
+		this.state = {number: 0}
 	}
 	handleClick = () => {
-		this.setState({
-			list: ['A', 'C', 'E', 'B', 'G']
-		})
+		this.setState({number: this.state.number + 1})
 	}
 	render() {
 		return (
-			<React.Fragment>
-				<ul>
-					{this.state.list.map(item => <li key={item}>{item}</li>)}
-				</ul>
+			<div>
+				<p>{this.state.number}</p>
+				<ChildCount count={this.state.number}/>
 				<button onClick={this.handleClick}>+</button>
-			</React.Fragment>
+			</div>
+		)
+	}
+}
+class ChildCount extends React.Component {
+	constructor(props) {
+		super(props)
+		this.state = {number : 0}
+	}
+	static getDerivedStateFromProps(nextProps, prevState) {
+		const {count} = nextProps
+		if (count % 2 === 0) {
+			return {number: count * 2}
+		} else {
+			return {number: count * 3}
+		}
+	}
+	render() {
+		return (
+			<p>{this.state.number}</p>
 		)
 	}
 }
