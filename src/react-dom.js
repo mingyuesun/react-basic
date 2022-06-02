@@ -189,13 +189,6 @@ function updateFunctionComponent(oldVdom, newVdom) {
  * @param {*} newVChildren 新子节点虚拟 DOM 数组
  */
 function updateChildren(parentDOM, oldVChildren, newVChildren) {
-  // oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]  
-  // newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren]
-  // const maxLength = Math.max(oldVChildren.length, newVChildren.length)
-  // for (let i = 0; i < maxLength; i++) {
-  //   let nextVdom = oldVChildren.find((item, index) => index > i && item && findDOM(item))
-  //   compareTwoVdom(parentDOM, oldVChildren[i], newVChildren[i], findDOM(nextVdom))
-  // }
   oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : (oldVChildren ? [oldVChildren].filter(item => item) : [])
   newVChildren = Array.isArray(newVChildren) ? newVChildren : (newVChildren ? [newVChildren].filter(item => item) : [])
   let keyedOldMap = {}
