@@ -1,4 +1,4 @@
-import { REACT_TEXT, REACT_COMPONENT, REACT_FORWARD_REF, REACT_FRAGMENT, MOVE, PLACEMENT, REACT_PROVIDER, REACT_CONTEXT } from "./constants"
+import { REACT_TEXT, REACT_COMPONENT, REACT_FORWARD_REF, REACT_FRAGMENT, MOVE, PLACEMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from "./constants"
 import { addEvent } from "./event"
 /**
  * 把虚拟 DOM 变成真实 DOM
@@ -18,7 +18,9 @@ function createDOM(vdom) {
   let { type, props, ref } = vdom
   // 根据不同的虚拟 DOM 类型创建真实 DOM
   let dom
-  if (type && type.$$typeof === REACT_PROVIDER) { 
+  if (type && type.$$typeof === REACT_MEMO) {
+    return mountMemoComponent(vdom)
+  } else if (type && type.$$typeof === REACT_PROVIDER) { 
     return mountProviderComponent(vdom)
   } else if (type && type.$$typeof === REACT_CONTEXT) {
     return mountContextComponent(vdom)
@@ -51,6 +53,14 @@ function createDOM(vdom) {
   vdom.dom = dom
   if (ref) ref.current = dom
   return dom
+}
+
+function mountMemoComponent(vdom) {
+  let {type, props} = vdom
+  let renderVdom = type.type(props)
+  // vdom.prevProps = props
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
 }
 
 /**
@@ -161,7 +171,7 @@ function unMountVdom(oldVdom) {
     ref.current = null
   }
   if (props.children) {
-    let children = Array.isArray(props.children) ? props.children : [props.children]
+    let children = (Array.isArray(props.children) ? props.children : [props.children]).filter(item => typeof item !== 'undefined' || item !== null)
     children.forEach(unMountVdom)
   }
   if (currentDOM) currentDOM.remove()
@@ -173,7 +183,9 @@ function unMountVdom(oldVdom) {
  * @param {*} newVdom
  */
 function updateElement(oldVdom, newVdom) {
-  if (oldVdom.type.$$typeof === REACT_PROVIDER) {
+  if (oldVdom.type.$$typeof === REACT_MEMO) {
+    updateMemoComponent(oldVdom, newVdom)
+  }else if (oldVdom.type.$$typeof === REACT_PROVIDER) {
     updateProviderComponent(oldVdom, newVdom)
   } else if (oldVdom.type.$$typeof === REACT_CONTEXT) {
     updateContextComponent(oldVdom, newVdom)
@@ -195,6 +207,24 @@ function updateElement(oldVdom, newVdom) {
     } else {
       updateFunctionComponent(oldVdom, newVdom)
     }
+  }
+}
+
+function updateMemoComponent(oldVdom, newVdom){
+  let { type, prevProps } = oldVdom
+  // 属性相等，不用更新
+  if (type.compare(prevProps, newVdom.props)) {
+    newVdom.prevProps = prevProps
+    newVdom.oldRenderVdom = oldVdom.oldRenderVdom
+  // 属性不相等，需要更新
+  } else {
+    let oldDOM = findDOM(oldVdom)
+    let parentDOM = oldDOM.parentNode
+    let {type, props} = newVdom
+    let renderVdom = type.type(props)
+    compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+    newVdom.prevProps = props
+    newVdom.oldRenderVdom = renderVdom
   }
 }
 
@@ -243,8 +273,8 @@ function updateFunctionComponent(oldVdom, newVdom) {
  * @param {*} newVChildren 新子节点虚拟 DOM 数组
  */
 function updateChildren(parentDOM, oldVChildren, newVChildren) {
-  oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : (oldVChildren ? [oldVChildren].filter(item => item) : [])
-  newVChildren = Array.isArray(newVChildren) ? newVChildren : (newVChildren ? [newVChildren].filter(item => item) : [])
+  oldVChildren = (Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]).filter(item => typeof item !== 'undefined' && item !== null)
+  newVChildren = (Array.isArray(newVChildren) ? newVChildren : [newVChildren]).filter(item => typeof item !== 'undefined' && item !== null)
   let keyedOldMap = {}
   let lastPlaceIndex = 0
   oldVChildren.forEach((oldVChild, index) => {

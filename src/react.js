@@ -1,5 +1,5 @@
-import { REACT_ELEMENT, REACT_FORWARD_REF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT } from './constants'
-import { toVdom } from './utils'
+import { REACT_ELEMENT, REACT_FORWARD_REF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from './constants'
+import { toVdom, shallowEqual } from './utils'
 import { Component } from './Component'
 console.log('self react')
 function createElement(type, config, children){
@@ -63,6 +63,21 @@ function cloneElement(element, newProps, ...newChildren) {
 	 return {...element, props}
 }
 
+// shallowEqual
+class PureComponent extends Component {
+	shouldComponentUpdate(newProps, nextState) {
+		return !shallowEqual(this.props, newProps) || !shallowEqual(this.state, nextState)
+	}
+}
+
+function memo(type, compare=shallowEqual) {
+	return {
+		$$typeof: REACT_MEMO,
+		type,
+		compare
+	}
+}
+
 const React = {
 	createElement,
 	Component,
@@ -70,7 +85,9 @@ const React = {
 	forwardRef,
 	Fragment: REACT_FRAGMENT,
 	createContext,
-	cloneElement
+	cloneElement,
+	PureComponent,
+	memo
 }
 
 export default React

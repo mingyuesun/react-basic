@@ -1,35 +1,39 @@
-import React from "react"
-import ReactDOM from "react-dom"
+import React from "./react"
+import ReactDOM from "./react-dom"
 
-function withTracker(OldComponent) {
-  return class MouseTracker extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = {x: 0, y: 0}
-    }
-    mouseMove = (event) => {
-      this.setState({
-        x: event.clientX,
-        y: event.clientY
-      })
-    }
-    render() {
-      return (
-        <div onMouseMove={this.mouseMove}>
-          <OldComponent {...this.state}/>
-        </div>
-      )
-    }
+class ClassCounter extends React.PureComponent {
+  render() {
+    console.log('ClassCounter render')
+    return (
+      <div>ClassCounter: {this.props.count}</div>
+    )
   }
 }
 
-function Show(props) {
-  return (
-    <React.Fragment>
-      <h1>鼠标位置</h1>
-      <p>鼠标当前位置：{props.x}, {props.y}</p>
-    </React.Fragment>
-  )
+function FunctionCounter(props) {
+  console.log('FunctionCounter render')
+  return <div>FunctionCounter: {props.count}</div>
 }
-let HighShow = withTracker(Show)
-ReactDOM.render(<HighShow/>, document.getElementById("root"))
+const MemoFunctionCounter = React.memo(FunctionCounter)
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {number: 0}
+    this.amountRef = React.createRef()
+  }
+  handleClick = () => {
+    let nextNumber = this.state.number + parseInt(this.amountRef.current.value)
+    this.setState({number: nextNumber})
+  }
+  render(){
+    return (
+      <div>
+        <ClassCounter count={this.state.number}/>
+        <MemoFunctionCounter count={this.state.number}/>
+        <input ref={this.amountRef} defaultValue={1}/>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    )
+  }
+}
+ReactDOM.render(<App/>, document.getElementById("root"))
