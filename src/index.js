@@ -1,40 +1,46 @@
-import React from "react"
-import ReactDOM from "react-dom"
+import React from "./react"
+import ReactDOM from "./react-dom"
 
-const loading = (message) => (OldComponent) => {
-  return class extends React.Component {
-    render() {
-      const state = {
-        show: () => {
-          console.log("show", message)
-        },
-        hide: () => {
-          console.log("hide", message)
-        }
-      }
-      return (
-        <OldComponent
-          {...this.props}
-          {...state}
-          {...{ ...this.props, ...state }}
-        />
-      )
-    }
+class Button extends React.Component {
+  state = { name: 'zhangsan' }
+  UNSAFE_componentWillMount() {
+    console.log('Button componentWillMount')
   }
-}
-@loading('消息')
-class Hello extends React.Component {
-  render() {
+  componentDidMount() {
+    console.log('Button componentDidMount')
+  } 
+  render(){
+    console.log('Button render')
     return (
-      <div>
-        <p>Hello</p>
-        <button onClick={this.props.show}>show</button>
-        <button onClick={this.props.hide}>hide</button>
-      </div>
+      <button name={this.state.name} title={this.props.title}/>
     )
   }
 }
-
-// const LoadingHello = loading("消息")(Hello)
-// ReactDOM.render(<LoadingHello />, document.getElementById("root"))
-ReactDOM.render(<Hello />, document.getElementById("root"))
+const wrapper = OldComponent => {
+  return class NewComponent extends OldComponent {
+    state = {number: 0}
+    UNSAFE_componentWillMount() {
+      console.log('WrapperButton componentWillMount')
+      super.UNSAFE_componentWillMount()
+    }
+    componentDidMount() {
+      console.log('WrapperButton componentDidMount')
+      super.componentDidMount()
+    }
+    handleClick = () => {
+      this.setState({number: this.state.number + 1})
+    }
+    render() {
+      console.log('WrapperButton render')
+      let renderElement = super.render()
+      let newProps = {
+        ...renderElement.props,
+        ...this.state,
+        onClick: this.handleClick
+      }
+      return React.cloneElement(renderElement, newProps, this.state.number)
+    }
+  }
+}
+let WrapperButton = wrapper(Button)
+ReactDOM.render(<WrapperButton title="标题" />, document.getElementById("root"))
