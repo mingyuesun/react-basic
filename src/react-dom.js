@@ -6,7 +6,18 @@ import { addEvent } from "./event"
  * @param {*} vdom
  * @param {*} container
  */
+let hookStates = []
+let hookIndex = 0
+let scheduleUpdate
 function render(vdom, container) {
+  mount(vdom, container)
+  scheduleUpdate = () => {
+    hookIndex = 0
+    compareTwoVdom(container, vdom, vdom)
+  }
+}
+
+function mount(vdom, container) {
   let newDOM = createDOM(vdom)
   container.appendChild(newDOM)
   if (newDOM.componentDidMount) {
@@ -44,7 +55,7 @@ function createDOM(vdom) {
     updateProps(dom, {}, props)
     if (typeof props.children === "object" && props.children.$$typeof) {
       props.children.mountIndex = 0
-      render(props.children, dom)
+      mount(props.children, dom)
     } else if (Array.isArray(props.children)) {
       reconcileChildren(props.children, dom)
     }
@@ -132,7 +143,7 @@ function mountFunctionComponent(vdom) {
 function reconcileChildren(childrenVdom, parentDOM) {
   for (let i = 0; i < childrenVdom.length; i++) {
     childrenVdom[i].mountIndex = i
-    render(childrenVdom[i], parentDOM)
+    mount(childrenVdom[i], parentDOM)
   }
 }
 
@@ -385,6 +396,16 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
   } else { // 旧的节点有值，新的节点有值，且类型相同，复用，更新属性
     updateElement(oldVdom, newVdom)    
   }
+}
+
+export function useState(initialState){
+  hookStates[hookIndex] = hookStates[hookIndex] || initialState
+  const currentIndex = hookIndex
+  function setState(newState) {
+    hookStates[currentIndex] = newState
+    scheduleUpdate()
+  }
+  return [hookStates[hookIndex++], setState]
 }
 
 const ReactDOM = {

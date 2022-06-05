@@ -1,6 +1,7 @@
 import { REACT_ELEMENT, REACT_FORWARD_REF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from './constants'
 import { toVdom, shallowEqual } from './utils'
 import { Component } from './Component'
+import * as hooks from './react-dom'
 console.log('self react')
 function createElement(type, config, children){
 	let ref
@@ -87,7 +88,8 @@ const React = {
 	createContext,
 	cloneElement,
 	PureComponent,
-	memo
+	memo,
+	...hooks
 }
 
 export default React
