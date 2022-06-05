@@ -11,6 +11,7 @@ let hookIndex = 0
 let scheduleUpdate
 function render(vdom, container) {
   mount(vdom, container)
+  // 调用 scheduleUpdate 会从根节点进行 dom-diff
   scheduleUpdate = () => {
     hookIndex = 0
     compareTwoVdom(container, vdom, vdom)
@@ -406,6 +407,42 @@ export function useState(initialState){
     scheduleUpdate()
   }
   return [hookStates[hookIndex++], setState]
+}
+
+export function useMemo(factory, deps){
+  if (hookStates[hookIndex]) {
+    let [lastMemo, lastDps] = hookStates[hookIndex]
+    let same = deps.every((item, index) => item === lastDps[index])
+    if (same) {
+      hookIndex++
+      return lastMemo
+    } else {
+      let newMemo = factory()
+      hookStates[hookIndex++] = [newMemo, deps]
+      return newMemo
+    }
+  } else {
+    let newMemo = factory()
+    hookStates[hookIndex++] = [newMemo, deps]
+    return newMemo
+  } 
+}
+
+export function useCallback(callback, deps){
+  if (hookStates[hookIndex]) {
+    let  [lastCallback, lastDeps] = hookStates[hookIndex]
+    let same = deps.every((item, index) => item === lastDeps[index])
+    if (same) {
+      hookIndex++
+      return lastCallback
+    } else {
+      hookStates[hookIndex++] = [callback, deps]
+      return callback
+    }
+  } else {
+    hookStates[hookIndex++] = [callback, deps]
+    return callback
+  }
 }
 
 const ReactDOM = {
