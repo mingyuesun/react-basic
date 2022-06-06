@@ -463,6 +463,28 @@ export function useContext(context) {
   return context._currentValue
 }
 
+export function useEffect(callback, deps) {
+  let currentIndex = hookIndex
+  if (hookStates[hookIndex]) {
+    let [destory, lastDeps] = hookStates[hookIndex]
+    let same = deps && deps.every((item, index) => item === lastDeps(index))
+    if (same) {
+      hookIndex++
+    } else {
+      destory&&destory()
+      setTimeout(() => {
+        hookStates[currentIndex] = [callback(), deps]
+      })
+      hookIndex++
+    }
+  } else {
+    setTimeout(() => {
+      hookStates[currentIndex] = [callback(), deps]
+    })
+    hookIndex++
+  }
+}
+
 const ReactDOM = {
   render,
   createPortal: render
