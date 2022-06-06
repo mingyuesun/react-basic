@@ -4,7 +4,6 @@ import ReactDOM from "./react-dom"
 let ADD = 'ADD'
 let MINUS = 'MINUS'
 const initialState = {number: 0}
-const CounterContext = React.createContext()
 
 function reducer(state = initialState, action) {
   switch(action.type) {
@@ -18,7 +17,7 @@ function reducer(state = initialState, action) {
 }
 
 function Counter(){
-  let {state, dispatch} = React.useContext(CounterContext)
+  const [state, dispatch] = React.useReducer(reducer, initialState)
   return (
     <div>
       <p>{state.number}</p>
@@ -28,13 +27,4 @@ function Counter(){
   )
 }
 
-function App() {
-  const [state, dispatch] = React.useReducer(reducer, initialState)
-  return (
-    <CounterContext.Provider value={{state, dispatch}}>
-      <Counter/>
-    </CounterContext.Provider>
-  )
-}
-
-ReactDOM.render(<App/>, document.getElementById("root"))
+ReactDOM.render(<Counter/>, document.getElementById("root"))

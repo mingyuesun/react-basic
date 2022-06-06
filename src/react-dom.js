@@ -459,6 +459,10 @@ export function useReducer(reducer, initialState){
   return [hookStates[hookIndex++], dispatch]
 }
 
+export function useContext(context) {
+  return context._currentValue
+}
+
 const ReactDOM = {
   render,
   createPortal: render
