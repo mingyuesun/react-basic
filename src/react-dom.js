@@ -485,6 +485,33 @@ export function useEffect(callback, deps) {
   }
 }
 
+export function useLayoutEffect(callback, deps) {
+  let currentIndex = hookIndex
+  if (hookStates[hookIndex]) {
+    let [destory, lastDeps] = hookStates[hookIndex]
+    let same = deps && deps.every((item, index) => item === lastDeps(index))
+    if (same) {
+      hookIndex++
+    } else {
+      destory&&destory()
+      queueMicrotask(() => {
+        hookStates[currentIndex] = [callback(), deps]
+      })
+      hookIndex++
+    }
+  } else {
+    queueMicrotask(() => {
+      hookStates[currentIndex] = [callback(), deps]
+    })
+    hookIndex++
+  }
+}
+
+export function useRef(initialState) {
+  hookStates[hookIndex] = hookStates[hookIndex] || {current: initialState}
+  return hookStates[hookIndex++]
+}
+
 const ReactDOM = {
   render,
   createPortal: render

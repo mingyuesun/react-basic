@@ -1,21 +1,21 @@
 import React from "./react"
 import ReactDOM from "./react-dom"
 
-function Counter() {
-  const [number, setNumber] = React.useState(0)
+function Animate() {
+  const ref = React.useRef()
   React.useEffect(() => {
-    console.log('开启一个定时器')
-    const timer = setInterval(() => {
-      setNumber(number => number + 1)
-    }, 1000)
-    return () => {
-      console.log('销毁一个定时器')
-      clearInterval(timer)
-    }
+    ref.current.style.transform = `translate(500px)`
+    ref.current.style.transition = `all 500ms`
   })
+  let style = {
+    width: '100px',
+    height: '100px',
+    borderRadius: '50%',
+    backgroundColor: 'red' 
+  }
   return (
-    <div>{number}</div>
+    <div style={style} ref={ref}></div>
   )
 }
 
-ReactDOM.render(<Counter/>, document.getElementById("root"))
+ReactDOM.render(<Animate/>, document.getElementById("root"))
