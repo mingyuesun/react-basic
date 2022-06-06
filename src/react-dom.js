@@ -400,13 +400,7 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
 }
 
 export function useState(initialState){
-  hookStates[hookIndex] = hookStates[hookIndex] || initialState
-  const currentIndex = hookIndex
-  function setState(newState) {
-    hookStates[currentIndex] = newState
-    scheduleUpdate()
-  }
-  return [hookStates[hookIndex++], setState]
+  return useReducer(null, initialState)
 }
 
 export function useMemo(factory, deps){
@@ -443,6 +437,26 @@ export function useCallback(callback, deps){
     hookStates[hookIndex++] = [callback, deps]
     return callback
   }
+}
+
+export function useReducer(reducer, initialState){
+  hookStates[hookIndex] = hookStates[hookIndex] || initialState
+  const currentIndex = hookIndex
+  function dispatch(action) {
+    // 1. 获取旧的状态
+    let oldState = hookStates[currentIndex]
+    let newState;
+    if (reducer) {
+      // 如果有 reducer 就使用 reducer 计算新状态
+      newState = reducer(oldState, action)
+    } else {
+      // 判断 action 是不是函数，如果是，传入旧的状态，获取新状态
+      newState = typeof action === 'function' ? action(oldState) : action
+    }
+    hookStates[currentIndex] = newState
+    scheduleUpdate()
+  }
+  return [hookStates[hookIndex++], dispatch]
 }
 
 const ReactDOM = {

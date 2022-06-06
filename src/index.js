@@ -1,27 +1,30 @@
 import React from "./react"
 import ReactDOM from "./react-dom"
 
-function Child({data, handleClick}) {
-  console.log('Child render')
-  return <button onClick={handleClick}>{data.number}</button>
+let ADD = 'ADD'
+let MINUS = 'MINUS'
+const initialState = {number: 0}
+
+function reducer(state = initialState, action) {
+  switch(action.type) {
+    case ADD:
+      return {number: state.number + 1};
+    case MINUS:
+      return {number: state.number - 1};
+    default:
+      return state
+  }
 }
 
-let MemoChild = React.memo(Child)
-
-function App() {
-  console.log('App render')
-  let [name, setName] = React.useState('test')
-  let [number, setNumber] = React.useState(0)
-  // 如果依赖的变量发生了改变，就会重新执行方法得到新对象；
-  // 如果没有改变，那就不会执行方法获取新的对象了，会复用旧的对象
-  let data = React.useMemo(() => ({number}), [number]) 
-  const handleClick = React.useCallback(() => setNumber(number+1), [number])
+function Counter(){
+  const [state, dispatch] = React.useReducer(reducer, initialState)
   return (
     <div>
-      <input type="text" value={name} onChange={event => setName(event.target.value)}/>
-      <MemoChild data={data} handleClick={handleClick}/>
+      <p>{state.number}</p>
+      <button onClick={() => dispatch({type: ADD})}>+</button>
+      <button onClick={() => dispatch({type: MINUS})}>-</button>
     </div>
   )
 }
 
-ReactDOM.render(<App/>, document.getElementById("root"))
+ReactDOM.render(<Counter/>, document.getElementById("root"))
