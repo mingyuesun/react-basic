@@ -120,7 +120,10 @@ function mountClassComponent(vdom) {
   if (classInstance.UNSAFE_componentWillMount) {
     classInstance.UNSAFE_componentWillMount()
   }
-  if (ref) ref.current = classInstance
+  if (ref) {
+    ref.current = classInstance
+    classInstance.ref = ref
+  }
   let renderVdom = classInstance.render()
   // 把类组件渲染的虚拟 DOM 放到类的实例上
   classInstance.oldRenderVdom = vdom.oldRenderVdom = renderVdom
@@ -510,6 +513,10 @@ export function useLayoutEffect(callback, deps) {
 export function useRef(initialState) {
   hookStates[hookIndex] = hookStates[hookIndex] || {current: initialState}
   return hookStates[hookIndex++]
+}
+
+export function useImperativeHandle(ref, handler){
+  ref.current = handler()
 }
 
 const ReactDOM = {
